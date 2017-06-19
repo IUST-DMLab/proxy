@@ -55,6 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/services/rs/v1/**").authenticated()
                 .antMatchers("/services/rs/hello/**").authenticated()
                 .antMatchers("/services/**").permitAll()
+                .antMatchers("/proxy/**").permitAll()
                 .anyRequest().authenticated()
                 .and().requestCache().requestCache(new NullRequestCache())
                 .and().formLogin().loginPage("/login").permitAll()
