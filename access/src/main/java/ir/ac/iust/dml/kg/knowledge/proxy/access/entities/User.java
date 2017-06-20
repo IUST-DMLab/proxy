@@ -6,12 +6,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 @Document(collection = "users")
+@XmlType(name = "User", namespace = "http://kg.dml.iust.ac.ir")
 public class User implements Serializable {
     @Id
     @JsonIgnore
@@ -35,7 +37,7 @@ public class User implements Serializable {
     }
 
     public String getIdentifier() {
-        return id.toString();
+        return id != null ? id.toString() : null;
     }
 
     public ObjectId getId() {

@@ -6,9 +6,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
 @Document(collection = "permissions")
+@XmlType(name = "Permission", namespace = "http://kg.dml.iust.ac.ir")
 public class Permission implements Serializable {
     @Id
     @JsonIgnore
@@ -20,8 +22,17 @@ public class Permission implements Serializable {
     public Permission() {
     }
 
+    public String getIdentifier() {
+        return id != null ? id.toString() : null;
+    }
+
     public Permission(String title) {
         this.title = title;
+    }
+
+    public Permission(String title, String description) {
+        this.title = title;
+        this.description = description;
     }
 
     public ObjectId getId() {

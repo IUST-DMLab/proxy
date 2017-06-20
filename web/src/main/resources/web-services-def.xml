@@ -23,11 +23,14 @@
     </bean>
 
     <bean id="helloService" class="ir.ac.iust.dml.kg.knowledge.proxy.web.services.hello.HelloServiceImpl"/>
+    <bean id="userService" class="ir.ac.iust.dml.kg.knowledge.proxy.web.services.v1.UserServiceImpl"/>
 
     <jaxws:endpoint implementor="#helloService" address="/ws/v0"/>
+    <jaxws:endpoint implementor="#userService" address="/ws/v1/users"/>
     <jaxrs:server id="jaxRsServer" address="/rs">
         <jaxrs:serviceBeans>
             <ref bean="helloService"/>
+            <ref bean="userService"/>
         </jaxrs:serviceBeans>
 
         <jaxrs:features>
