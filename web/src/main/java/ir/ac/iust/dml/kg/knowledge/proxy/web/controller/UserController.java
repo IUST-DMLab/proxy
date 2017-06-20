@@ -31,7 +31,6 @@ public class UserController {
         if (permissionDao.readByTitle("User") == null)
             permissionDao.write(new Permission("User", " Manage users of proxy server"));
         if (userDao.readByUsername("superuser") == null)
-            userDao.write(new User("superuser", passwordEncoder.encode("superuser"),
-                    "superuser", "superuser"));
+            userDao.write(new User("superuser", passwordEncoder.encode("superuser"), "superuser"));
     }
 }

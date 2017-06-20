@@ -1,5 +1,6 @@
 package ir.ac.iust.dml.kg.knowledge.proxy.web.security;
 
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,8 +23,8 @@ public class MyUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         final Set<GrantedAuthority> authorities = new HashSet<>();
-        for (String permission : user.getPermissions())
-            authorities.add(new SimpleGrantedAuthority(String.format("PER_%s", permission)));
+        for (Permission p : user.getPermissions())
+            authorities.add(new SimpleGrantedAuthority(String.format("PER_%s", p.getTitle())));
         return authorities;
     }
 

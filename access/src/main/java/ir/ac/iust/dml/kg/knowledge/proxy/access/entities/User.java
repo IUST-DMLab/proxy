@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.xml.bind.annotation.XmlType;
@@ -23,12 +24,13 @@ public class User implements Serializable {
     @JsonIgnore
     private String password;
     private String name;
-    private Set<String> permissions;
+    @DBRef
+    private Set<Permission> permissions;
 
     public User() {
     }
 
-    public User(String username, String password, String name, String... permissions) {
+    public User(String username, String password, String name, Permission... permissions) {
         this.username = username;
         this.password = password;
         this.name = name;
@@ -72,12 +74,12 @@ public class User implements Serializable {
         this.name = name;
     }
 
-    public Set<String> getPermissions() {
+    public Set<Permission> getPermissions() {
         if (permissions == null) permissions = new HashSet<>();
         return permissions;
     }
 
-    public void setPermissions(Set<String> permissions) {
+    public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;
     }
 }

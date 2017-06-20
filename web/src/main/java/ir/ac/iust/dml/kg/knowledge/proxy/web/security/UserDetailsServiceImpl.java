@@ -28,8 +28,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         final User user = users.readByUsername(username);
         if (user == null)
             throw new UsernameNotFoundException("User not found");
-        if (user.getPermissions().contains("superuser"))
-            permissions.readAll().forEach(p -> user.getPermissions().add(p.getTitle()));
+        if (user.getUsername().equals("superuser"))
+            user.getPermissions().addAll(permissions.readAll());
         return new MyUserDetails(user);
     }
 }

@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlType;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -32,11 +33,6 @@ public class UserData {
             user.setUsername(username);
         if (password != null)
             user.setPassword(password);
-        if (!username.equals("superuser")) {
-            user.getPermissions().clear();
-            permissions.remove("superuser");
-            user.setPermissions(permissions);
-        }
         user.setName(name);
         return user;
     }
@@ -45,7 +41,8 @@ public class UserData {
         identifier = user.getIdentifier();
         username = user.getUsername();
         name = user.getName();
-        permissions = user.getPermissions();
+        permissions = new HashSet<>();
+        user.getPermissions().forEach(p -> permissions.add(p.getTitle()));
         return this;
     }
 

@@ -49,6 +49,12 @@ public class UserServiceImpl implements IUserServices {
             throw new RuntimeException("Username can not be repeated");
         if (data.getPassword() != null) data.setPassword(passwordEncoder.encode(data.getPassword()));
         data.fill(user);
+        user.getPermissions().clear();
+        data.getPermissions().forEach(dp -> {
+            final Permission per = permissionDao.readByTitle(dp);
+            if (per != null)
+                user.getPermissions().add(per);
+        });
         userDao.write(user);
         return user;
     }

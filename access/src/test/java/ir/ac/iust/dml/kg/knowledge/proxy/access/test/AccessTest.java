@@ -21,53 +21,56 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration("classpath:persistence-context.xml")
 public class AccessTest {
     @Autowired
-    IUserDao userDao;
+    IUserDao users;
     @Autowired
-    IPermissionDao permissionDao;
+    IPermissionDao permissions;
     @Autowired
     IForwardDao forwardDao;
 
-    final User defUser1 = new User("#defUser1", "pass1", "name1", "expert");
+    final Permission defPer1 = new Permission("test", "a test permission");
+    final User defUser1 = new User("#defUser1", "pass1", "name1", defPer1);
 
     @Before
     public void setup() {
-        userDao.write(defUser1);
+        permissions.write(defPer1);
+        users.write(defUser1);
     }
 
     @After
     public void cleanup() {
-        userDao.delete(defUser1);
+        users.delete(defUser1);
+        permissions.delete(defPer1);
     }
 
     @Test
     public void testUserDao() {
-        final User user1 = new User("user1", "pass1", "name1", "expert");
-        final User user2 = new User("user2", "pass2", "name2", "expert");
-        userDao.write(user1, user2);
+        final User user1 = new User("user1", "pass1", "name1", defPer1);
+        final User user2 = new User("user2", "pass2", "name2", defPer1);
+        users.write(user1, user2);
         try {
-            userDao.write(new User("user1", "pass1", "name1", "expert"));
+            users.write(new User("user1", "pass1", "name1", defPer1));
             assert false;
         } catch (Throwable th) {
             assert true;
         }
-        assert userDao.read(user1.getId()).getUsername().equals(user1.getUsername());
-        userDao.delete(user1, user2);
+        assert users.read(user1.getId()).getUsername().equals(user1.getUsername());
+        users.delete(user1, user2);
     }
 
     @Test
     public void testPermissionDao() {
         final Permission per1 = new Permission("per1");
         final Permission per2 = new Permission("per2");
-        permissionDao.write(per1, per2);
+        permissions.write(per1, per2);
         try {
-            permissionDao.write(new Permission("per1"));
+            permissions.write(new Permission("per1"));
             assert false;
         } catch (Throwable th) {
             assert true;
         }
-        assert permissionDao.read(per1.getId()).getTitle().equals(per1.getTitle());
-        assert permissionDao.readAll().contains(per2);
-        permissionDao.delete(per1, per2);
+        assert permissions.read(per1.getId()).getTitle().equals(per1.getTitle());
+        assert permissions.readAll().contains(per2);
+        permissions.delete(per1, per2);
     }
 
     @Test
