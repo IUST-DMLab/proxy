@@ -1,5 +1,8 @@
 package ir.ac.iust.dml.kg.knowledge.proxy.web.controller;
 
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Forward;
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
+import ir.ac.iust.dml.kg.knowledge.proxy.web.logic.ForwardLogic;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -11,6 +14,9 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +29,7 @@ import java.io.OutputStream;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -35,6 +42,7 @@ public class ProxyController {
      * approach does case insensitive lookup faster.
      */
     private static final HeaderGroup hopByHopHeaders;
+    private final ForwardLogic logic;
 
     static {
         hopByHopHeaders = new HeaderGroup();
@@ -50,7 +58,9 @@ public class ProxyController {
 
     private final HttpClient client;
 
-    public ProxyController() {
+    @Autowired
+    public ProxyController(ForwardLogic logic) {
+        this.logic = logic;
         final RequestConfig config = RequestConfig.custom()
                 .setRedirectsEnabled(false)
                 .setCookieSpec(CookieSpecs.IGNORE_COOKIES) // we handle them in the servlet instead
@@ -66,11 +76,26 @@ public class ProxyController {
     public void proxy(
             @PathVariable("source") String source,
             HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
+        final Forward destination = logic.get(source);
+        final Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        if (!destination.getPermissions().isEmpty()) {
+            boolean found = false;
+            for (Permission fp : destination.getPermissions())
+                for (GrantedAuthority up : authorities)
+                    if (fp.getTitle().equals(up.getAuthority()))
+                        found = true;
+            if (!found) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        }
+        final String url = request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length())
+                + "?" + request.getQueryString();
 
-        final HttpRequest proxyRequest = createProxyRequest(request, "/");
+        final HttpRequest proxyRequest = createProxyRequest(request, url);
         copyRequestHeaders(request, proxyRequest);
         setForwardedHeader(request, proxyRequest);
-        final HttpResponse proxyResponse = client.execute(URIUtils.extractHost(new URI("http://google.com/")), proxyRequest);
+        final HttpResponse proxyResponse = client.execute(URIUtils.extractHost(new URI(destination.getDestination())), proxyRequest);
         // Pass the response code. This method with the "reason phrase" is deprecated but it's the only way to pass the reason along too.
         final int statusCode = proxyResponse.getStatusLine().getStatusCode();
         //noinspection deprecation

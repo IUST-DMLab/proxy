@@ -24,7 +24,7 @@ public class MyUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         final Set<GrantedAuthority> authorities = new HashSet<>();
         for (Permission p : user.getPermissions())
-            authorities.add(new SimpleGrantedAuthority(String.format("PER_%s", p.getTitle())));
+            authorities.add(new SimpleGrantedAuthority(p.getTitle()));
         return authorities;
     }
 
