@@ -47,9 +47,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/services/rs/v1/experts/login").permitAll()
                 .antMatchers("/services/rs/v1/users/login").permitAll()
                 .antMatchers("/services/rs/v1/users/**").hasAnyAuthority("PER_User")
+                .antMatchers("/services/rs/v1/users/forward").permitAll()
+                .antMatchers("/services/rs/v1/users/**").hasAnyAuthority("PER_Forward")
                 .antMatchers("/services/rs/hello/**").authenticated()
                 .antMatchers("/services/**").permitAll()
                 .antMatchers("/proxy/**").permitAll()

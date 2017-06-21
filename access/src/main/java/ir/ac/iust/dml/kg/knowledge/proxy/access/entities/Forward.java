@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -19,16 +20,21 @@ public class Forward implements Serializable {
     @Indexed(unique = true)
     private String source;
     private String destination;
-    private Set<String> permissions;
+    @DBRef
+    private Set<Permission> permissions;
 
     public Forward() {
     }
 
-    public Forward(String source, String destination, String... permissions) {
+    public Forward(String source, String destination, Permission... permissions) {
         this.source = source;
         this.destination = destination;
         this.permissions = new HashSet<>();
         Collections.addAll(this.permissions, permissions);
+    }
+
+    public String getIdentifier() {
+        return id != null ? id.toString() : null;
     }
 
     public ObjectId getId() {
@@ -55,11 +61,12 @@ public class Forward implements Serializable {
         this.destination = destination;
     }
 
-    public Set<String> getPermissions() {
+    public Set<Permission> getPermissions() {
+        if (permissions == null) permissions = new HashSet<>();
         return permissions;
     }
 
-    public void setPermissions(Set<String> permissions) {
+    public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;
     }
 

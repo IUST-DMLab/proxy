@@ -5,7 +5,6 @@ import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IPermissionDao;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IUserDao;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.User;
-import ir.ac.iust.dml.kg.knowledge.proxy.web.services.v1.data.PermissionData;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.services.v1.data.UserData;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class UserServiceImpl implements IUserServices {
     }
 
     @Override
-    public User edit(@Valid UserData data) {
+    public UserData edit(@Valid UserData data) {
         final User user = data.getIdentifier() == null ? new User() : userDao.read(new ObjectId(data.getIdentifier()));
         if (user == null) return null;
         final User oldUser = userDao.readByUsername(data.getUsername());
@@ -56,25 +55,13 @@ public class UserServiceImpl implements IUserServices {
                 user.getPermissions().add(per);
         });
         userDao.write(user);
-        return user;
+        return data.sync(user);
     }
 
 
     @Override
     public PagingList<User> search(String name, String username, int page, int pageSize) {
         return userDao.search(name, username, page, pageSize);
-    }
-
-    @Override
-    public Permission permission(@Valid PermissionData data) {
-        final Permission permission = data.getIdentifier() == null ? new Permission() : permissionDao.read(new ObjectId(data.getIdentifier()));
-        if (permission == null) return null;
-        final Permission oldPermission = permissionDao.readByTitle(data.getTitle());
-        if (oldPermission != null && !oldPermission.getIdentifier().equals(permission.getIdentifier()))
-            throw new RuntimeException("Title can not be repeated");
-        data.fill(permission);
-        permissionDao.write(permission);
-        return permission;
     }
 
     @Override

@@ -4,6 +4,7 @@ import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.xml.bind.annotation.XmlType;
 
 /**
@@ -14,6 +15,7 @@ public class PermissionData {
     private String identifier;
     @NotNull
     @NotEmpty
+    @Pattern(regexp = "\\p{javaAlphabetic}+")
     private String title;
     private String description;
 
