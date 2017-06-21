@@ -76,11 +76,12 @@ public class ProxyController {
     public void proxy(
             @PathVariable("source") String source,
             HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
-        final Forward destination = logic.get(source);
+        final Forward forward = logic.get(source);
+        final URI destination = new URI(forward.getDestination());
         final Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        if (!destination.getPermissions().isEmpty()) {
+        if (!forward.getPermissions().isEmpty()) {
             boolean found = false;
-            for (Permission fp : destination.getPermissions())
+            for (Permission fp : forward.getPermissions())
                 for (GrantedAuthority up : authorities)
                     if (fp.getTitle().equals(up.getAuthority()))
                         found = true;
@@ -89,13 +90,19 @@ public class ProxyController {
                 return;
             }
         }
-        final String url = request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length())
-                + "?" + request.getQueryString();
+        final StringBuilder url = new StringBuilder();
+        if (destination.getPath().endsWith("/"))
+            url.append(destination.getPath());
+        else
+            url.append(destination.getPath()).append("/");
+        url.append(request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length() + 1));
+        if (request.getQueryString() != null)
+            url.append("?").append(request.getQueryString());
 
-        final HttpRequest proxyRequest = createProxyRequest(request, url);
+        final HttpRequest proxyRequest = createProxyRequest(request, url.toString());
         copyRequestHeaders(request, proxyRequest);
         setForwardedHeader(request, proxyRequest);
-        final HttpResponse proxyResponse = client.execute(URIUtils.extractHost(new URI(destination.getDestination())), proxyRequest);
+        final HttpResponse proxyResponse = client.execute(URIUtils.extractHost(destination), proxyRequest);
         // Pass the response code. This method with the "reason phrase" is deprecated but it's the only way to pass the reason along too.
         final int statusCode = proxyResponse.getStatusLine().getStatusCode();
         //noinspection deprecation
