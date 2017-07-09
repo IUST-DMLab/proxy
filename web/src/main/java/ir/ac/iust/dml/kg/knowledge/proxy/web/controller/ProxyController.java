@@ -48,6 +48,7 @@ public class ProxyController {
         hopByHopHeaders = new HeaderGroup();
         String[] headers = new String[]{
                 "Keep-Alive",
+                "Access-Control-Allow-Origin",
                 HttpHeaders.HOST, HttpHeaders.CONNECTION, HttpHeaders.CONTENT_LENGTH,
                 HttpHeaders.PROXY_AUTHENTICATE, HttpHeaders.PROXY_AUTHORIZATION,
                 HttpHeaders.TE, HttpHeaders.TRAILER, HttpHeaders.TRANSFER_ENCODING, HttpHeaders.UPGRADE};
