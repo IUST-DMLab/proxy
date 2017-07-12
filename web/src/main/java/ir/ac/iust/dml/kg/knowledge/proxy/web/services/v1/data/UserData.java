@@ -18,7 +18,6 @@ public class UserData {
     @NotNull
     @NotEmpty
     private String username;
-    @NotEmpty
     @Size(min = 3)
     private String password;
     @NotEmpty
