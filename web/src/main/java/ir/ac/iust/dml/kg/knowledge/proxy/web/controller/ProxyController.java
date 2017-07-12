@@ -2,7 +2,9 @@ package ir.ac.iust.dml.kg.knowledge.proxy.web.controller;
 
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Forward;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.User;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.logic.ForwardLogic;
+import ir.ac.iust.dml.kg.knowledge.proxy.web.security.MyUserDetails;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -15,7 +17,6 @@ import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.message.HeaderGroup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +30,6 @@ import java.io.OutputStream;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -47,6 +47,7 @@ public class ProxyController {
     static {
         hopByHopHeaders = new HeaderGroup();
         String[] headers = new String[]{
+                "x-auth-username", "x-auth-identifier", "x-auth-permissions",
                 "Keep-Alive",
                 "Access-Control-Allow-Origin",
                 HttpHeaders.HOST, HttpHeaders.CONNECTION, HttpHeaders.CONTENT_LENGTH,
@@ -78,31 +79,26 @@ public class ProxyController {
             @PathVariable("source") String source,
             HttpServletRequest request, HttpServletResponse response) throws IOException, URISyntaxException {
         final Forward forward = logic.get(source);
-        final URI destination = new URI(forward.getDestination());
-        final Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        final Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        final User user = principal != null && principal instanceof MyUserDetails ? ((MyUserDetails) principal).getUser() : null;
         if (!forward.getPermissions().isEmpty()) {
             boolean found = false;
-            for (Permission fp : forward.getPermissions())
-                for (GrantedAuthority up : authorities)
-                    if (fp.getTitle().equals(up.getAuthority()))
-                        found = true;
+            if (user != null)
+                for (Permission fp : forward.getPermissions())
+                    for (Permission p : user.getPermissions())
+                        if (fp.getTitle().equals(p.getTitle()))
+                            found = true;
             if (!found) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
         }
-        final StringBuilder url = new StringBuilder();
-        if (destination.getPath().endsWith("/"))
-            url.append(destination.getPath());
-        else
-            url.append(destination.getPath()).append("/");
-        url.append(request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length() + 1));
-        if (request.getQueryString() != null)
-            url.append("?").append(request.getQueryString());
-
-        final HttpRequest proxyRequest = createProxyRequest(request, url.toString());
+        final URI destination = new URI(forward.getDestination());
+        final String proxyRequestUri = rewriteUrlFromRequest(request, source, destination);
+        final HttpRequest proxyRequest = createProxyRequest(request, proxyRequestUri);
         copyRequestHeaders(request, proxyRequest);
         setForwardedHeader(request, proxyRequest);
+        setForwardedAuthenticaton(user, proxyRequest);
         final HttpResponse proxyResponse = client.execute(URIUtils.extractHost(destination), proxyRequest);
         // Pass the response code. This method with the "reason phrase" is deprecated but it's the only way to pass the reason along too.
         final int statusCode = proxyResponse.getStatusLine().getStatusCode();
@@ -124,8 +120,16 @@ public class ProxyController {
 
     }
 
-    private String rewriteUrlFromRequest(HttpServletRequest request) {
-        return "http://www.khabaronline.ir/RSS";
+    private String rewriteUrlFromRequest(HttpServletRequest request, String source, URI destination) {
+        final StringBuilder url = new StringBuilder();
+        if (destination.getPath().endsWith("/"))
+            url.append(destination.getPath());
+        else
+            url.append(destination.getPath()).append("/");
+        url.append(request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length() + 1));
+        if (request.getQueryString() != null)
+            url.append("?").append(request.getQueryString());
+        return url.toString();
     }
 
     private HttpRequest createProxyRequest(HttpServletRequest request, String proxyRequestUri) throws IOException {
@@ -175,6 +179,14 @@ public class ProxyController {
         String protoHeaderName = "X-Forwarded-Proto";
         String protoHeader = servletRequest.getScheme();
         proxyRequest.setHeader(protoHeaderName, protoHeader);
+    }
+
+    private void setForwardedAuthenticaton(User user,
+                                           HttpRequest proxyRequest) {
+        if (user == null) return;
+        proxyRequest.setHeader("x-auth-username", user.getUsername());
+        proxyRequest.setHeader("x-auth-identifier", user.getIdentifier());
+        user.getPermissions().forEach(p -> proxyRequest.addHeader("x-auth-permissions", p.getTitle()));
     }
 
     /**
