@@ -4,6 +4,7 @@ import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IForwardDao;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IPermissionDao;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Forward;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.UrnMatching;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.logic.ForwardLogic;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.services.v1.data.ForwardData;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.services.v1.data.PermissionData;
@@ -17,6 +18,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Impl {@link IUserServices}
@@ -78,6 +80,16 @@ public class ForwardServiceImpl implements IForwardService {
             if (per != null)
                 forward.getPermissions().add(per);
         });
+        assert data.getUrns().size() == forward.getUrns().size();
+        for (int i = 0; i < data.getUrns().size(); i++) {
+            final Set<String> permissions = data.getUrns().get(i).getPermissions();
+            final UrnMatching urnMatching = forward.getUrns().get(i);
+            permissions.forEach(dp -> {
+                final Permission per = permissionDao.readByTitle(dp);
+                if (per != null)
+                    urnMatching.getPermissions().add(per);
+            });
+        }
         forwardDao.write(forward);
         forwardLogic.reload();
         return data.sync(forward);

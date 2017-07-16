@@ -2,6 +2,7 @@ package ir.ac.iust.dml.kg.knowledge.proxy.web.controller;
 
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Forward;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.Permission;
+import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.UrnMatching;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.User;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.logic.ForwardLogic;
 import ir.ac.iust.dml.kg.knowledge.proxy.web.security.MyUserDetails;
@@ -32,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class ProxyController {
@@ -81,20 +83,13 @@ public class ProxyController {
         final Forward forward = logic.get(source);
         final Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         final User user = principal != null && principal instanceof MyUserDetails ? ((MyUserDetails) principal).getUser() : null;
-        if (!forward.getPermissions().isEmpty()) {
-            boolean found = false;
-            if (user != null)
-                for (Permission fp : forward.getPermissions())
-                    for (Permission p : user.getPermissions())
-                        if (fp.getTitle().equals(p.getTitle()))
-                            found = true;
-            if (!found) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
+        final String urn = urnOfRequest(request, source);
+        if (!hasPermission(forward, user, urn, request.getMethod())) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
         final URI destination = new URI(forward.getDestination());
-        final String proxyRequestUri = rewriteUrlFromRequest(request, source, destination);
+        final String proxyRequestUri = rewriteUrlFromRequest(urn, destination);
         final HttpRequest proxyRequest = createProxyRequest(request, proxyRequestUri);
         copyRequestHeaders(request, proxyRequest);
         setForwardedHeader(request, proxyRequest);
@@ -120,17 +115,40 @@ public class ProxyController {
 
     }
 
-    private String rewriteUrlFromRequest(HttpServletRequest request, String source, URI destination) {
+    private boolean hasPermission(Forward forward, User user, String urn, String method) {
+        final UrnMatching checkUrn = forward.match(urn, method.toUpperCase());
+        final Set<Permission> permissions = checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions();
+        if (!permissions.isEmpty()) {
+            boolean found = false;
+            if (user != null)
+                for (Permission fp : forward.getPermissions())
+                    for (Permission p : user.getPermissions())
+                        if (fp.getTitle().equals(p.getTitle()))
+                            found = true;
+            return found;
+        }
+        return true;
+    }
+
+    private String urnOfRequest(HttpServletRequest request, String source) {
         final StringBuilder url = new StringBuilder();
-        if (destination.getPath().endsWith("/"))
-            url.append(destination.getPath());
-        else
-            url.append(destination.getPath()).append("/");
-        url.append(request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length() + 1));
+        url.append(request.getServletPath().substring(request.getServletPath().indexOf("/proxy/" + source) + ("/proxy/" + source).length()));
         if (request.getQueryString() != null)
             url.append("?").append(request.getQueryString());
         return url.toString();
     }
+
+    private String rewriteUrlFromRequest(String urn, URI destination) {
+        final StringBuilder url = new StringBuilder();
+        if (destination.getPath().endsWith("/"))
+            url.append(destination.getPath().substring(0, destination.getPath().length() - 1));
+        else
+            url.append(destination.getPath());
+        url.append(urn);
+        return url.toString();
+    }
+
+
 
     private HttpRequest createProxyRequest(HttpServletRequest request, String proxyRequestUri) throws IOException {
         final String method = request.getMethod();
