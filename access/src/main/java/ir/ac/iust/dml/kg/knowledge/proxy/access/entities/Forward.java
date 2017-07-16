@@ -8,9 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Document(collection = "forwards")
 public class Forward implements Serializable {
@@ -20,6 +18,7 @@ public class Forward implements Serializable {
     @Indexed(unique = true)
     private String source;
     private String destination;
+    private List<UrnMatching> urns;
     @DBRef
     private Set<Permission> permissions;
 
@@ -31,6 +30,14 @@ public class Forward implements Serializable {
         this.destination = destination;
         this.permissions = new HashSet<>();
         Collections.addAll(this.permissions, permissions);
+    }
+
+    public UrnMatching match(String urn, String method) {
+        if (urns != null)
+            for (UrnMatching u : urns)
+                if (u.match(urn, method))
+                    return u;
+        return null;
     }
 
     public String getIdentifier() {
@@ -61,6 +68,15 @@ public class Forward implements Serializable {
         this.destination = destination;
     }
 
+    public List<UrnMatching> getUrns() {
+        if (urns == null) urns = new ArrayList<>();
+        return urns;
+    }
+
+    public void setUrns(List<UrnMatching> urns) {
+        this.urns = urns;
+    }
+
     public Set<Permission> getPermissions() {
         if (permissions == null) permissions = new HashSet<>();
         return permissions;
@@ -87,4 +103,5 @@ public class Forward implements Serializable {
         result = 31 * result + (destination != null ? destination.hashCode() : 0);
         return result;
     }
+
 }
