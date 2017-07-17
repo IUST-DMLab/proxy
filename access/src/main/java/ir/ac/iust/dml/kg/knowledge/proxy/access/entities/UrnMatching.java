@@ -1,5 +1,6 @@
 package ir.ac.iust.dml.kg.knowledge.proxy.access.entities;
 
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashSet;
@@ -13,6 +14,7 @@ public class UrnMatching {
     private String urn;
     private MatchingType type;
     private String method;
+    @DBRef
     private Set<Permission> permissions;
 
     boolean match(String urn, String method) {
