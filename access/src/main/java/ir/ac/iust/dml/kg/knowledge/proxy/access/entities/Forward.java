@@ -10,6 +10,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Farsi Knowledge Graph Project
+ * Iran University of Science and Technology (Year 2017)
+ * Developed by HosseiN Khademi khaledi
+ * <p>
+ * Forward definition to forward req from source to destination
+ */
 @Document(collection = "forwards")
 public class Forward implements Serializable {
     @Id

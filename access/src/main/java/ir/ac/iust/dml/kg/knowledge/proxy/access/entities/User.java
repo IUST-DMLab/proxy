@@ -13,6 +13,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Farsi Knowledge Graph Project
+ * Iran University of Science and Technology (Year 2017)
+ * Developed by HosseiN Khademi khaledi
+ * <p>
+ * User of mongo
+ */
 @Document(collection = "users")
 @XmlType(name = "User", namespace = "http://kg.dml.iust.ac.ir")
 public class User implements Serializable {

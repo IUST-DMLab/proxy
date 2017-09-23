@@ -1,5 +1,6 @@
 package ir.ac.iust.dml.kg.knowledge.proxy.access.mongo;
 
+import ir.ac.iust.dml.kg.knowledge.commons.MongoDaoUtils;
 import ir.ac.iust.dml.kg.knowledge.commons.PagingList;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IForwardDao;
 import ir.ac.iust.dml.kg.knowledge.proxy.access.dao.IUserDao;
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
+ * Farsi Knowledge Graph Project
+ * Iran University of Science and Technology (Year 2017)
+ * Developed by HosseiN Khademi khaledi
+ * <p>
  * impl {@link IUserDao}
  */
 @Repository
@@ -60,6 +65,6 @@ public class ForwardDaoImpl implements IForwardDao {
         final Query query = new Query();
         if (source != null)
             query.addCriteria(Criteria.where("source").regex(source));
-        return DaoUtils.paging(op, Forward.class, query, page, pageSize);
+        return MongoDaoUtils.paging(op, Forward.class, query, page, pageSize);
     }
 }

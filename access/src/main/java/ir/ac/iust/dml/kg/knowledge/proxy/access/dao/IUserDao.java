@@ -5,6 +5,10 @@ import ir.ac.iust.dml.kg.knowledge.proxy.access.entities.User;
 import org.bson.types.ObjectId;
 
 /**
+ * Farsi Knowledge Graph Project
+ * Iran University of Science and Technology (Year 2017)
+ * Developed by HosseiN Khademi khaledi
+ * <p>
  * Interface dao for user operations
  */
 public interface IUserDao {
