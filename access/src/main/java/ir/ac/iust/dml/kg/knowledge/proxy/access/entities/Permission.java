@@ -9,6 +9,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
+/**
+ * Farsi Knowledge Graph Project
+ * Iran University of Science and Technology (Year 2017)
+ * Developed by HosseiN Khademi khaledi
+ * <p>
+ * Permission that need to forward
+ */
 @Document(collection = "permissions")
 @XmlType(name = "Permission", namespace = "http://kg.dml.iust.ac.ir")
 public class Permission implements Serializable {

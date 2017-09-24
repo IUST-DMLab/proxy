@@ -32,6 +32,6 @@ public class SmartHttpSessionStrategy implements HttpSessionStrategy {
 
     private HttpSessionStrategy getStrategy(HttpServletRequest request) {
         return (request.getServletPath().startsWith("/services") ||
-            request.getServletPath().startsWith("/proxy")) ? header : cookie;
+                request.getServletPath().startsWith("/proxy")) ? header : cookie;
     }
 }

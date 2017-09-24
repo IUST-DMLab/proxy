@@ -149,7 +149,6 @@ public class ProxyController {
     }
 
 
-
     private HttpRequest createProxyRequest(HttpServletRequest request, String proxyRequestUri) throws IOException {
         final String method = request.getMethod();
         //spec: RFC 2616, sec 4.3: either of these two headers signal that there is a message body.
