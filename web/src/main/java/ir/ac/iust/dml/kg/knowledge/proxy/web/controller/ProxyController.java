@@ -84,16 +84,7 @@ public class ProxyController {
         final Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         final User user = principal != null && principal instanceof MyUserDetails ? ((MyUserDetails) principal).getUser() : null;
 
-        if(user != null) {
-            System.out.println(user.getUsername());
-            System.out.println("permissions");
-            user.getPermissions().forEach(it -> System.out.println(it.getTitle()));
-        } else {
-            System.out.println("no user detected");
-        }
-
         final String urn = urnOfRequest(request, source);
-        System.out.println("urn: " + urn);
         if (!hasPermission(forward, user, urn, request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -127,11 +118,7 @@ public class ProxyController {
 
     private boolean hasPermission(Forward forward, User user, String urn, String method) {
         final UrnMatching checkUrn = forward.match(urn, method.toUpperCase());
-        if(checkUrn != null) {
-            System.out.println(checkUrn.getUrn() + " - " + checkUrn.getMethod() + " - " + checkUrn.getType());
-        }
         final Set<Permission> permissions = checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions();
-        permissions.forEach(p -> System.out.println(p.getTitle()));
         if (!permissions.isEmpty()) {
             boolean found = false;
             if (user != null)
