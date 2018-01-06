@@ -87,12 +87,13 @@ public class ProxyController {
         if(user != null) {
             System.out.println(user.getUsername());
             System.out.println("permissions");
-            user.getPermissions().forEach(System.out::println);
+            user.getPermissions().forEach(it -> System.out.println(it.getTitle()));
         } else {
             System.out.println("no user detected");
         }
 
         final String urn = urnOfRequest(request, source);
+        System.out.println("urn: " + urn);
         if (!hasPermission(forward, user, urn, request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
@@ -126,6 +127,8 @@ public class ProxyController {
 
     private boolean hasPermission(Forward forward, User user, String urn, String method) {
         final UrnMatching checkUrn = forward.match(urn, method.toUpperCase());
+        System.out.println(checkUrn);
+        System.out.println(checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions());
         final Set<Permission> permissions = checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions();
         if (!permissions.isEmpty()) {
             boolean found = false;
