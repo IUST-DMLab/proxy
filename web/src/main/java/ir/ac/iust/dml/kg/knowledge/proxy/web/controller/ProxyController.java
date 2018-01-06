@@ -127,7 +127,8 @@ public class ProxyController {
 
     private boolean hasPermission(Forward forward, User user, String urn, String method) {
         final UrnMatching checkUrn = forward.match(urn, method.toUpperCase());
-        System.out.println(checkUrn);
+        if(checkUrn != null)
+            System.out.println(checkUrn.getUrn());
         System.out.println(checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions());
         final Set<Permission> permissions = checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions();
         if (!permissions.isEmpty()) {
