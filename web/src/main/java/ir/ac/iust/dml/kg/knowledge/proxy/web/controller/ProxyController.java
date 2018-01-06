@@ -121,6 +121,9 @@ public class ProxyController {
         if(checkUrn != null)
             System.out.println(checkUrn.getUrn());
         final Set<Permission> permissions = checkUrn != null ? checkUrn.getPermissions() : forward.getPermissions();
+        permissions.forEach(it -> System.out.println(it.getTitle()));
+        if(user != null)
+            user.getPermissions().forEach(it -> System.out.println(it.getTitle()));
         if (!permissions.isEmpty()) {
             boolean found = false;
             if (user != null)
