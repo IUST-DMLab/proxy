@@ -83,6 +83,12 @@ public class ProxyController {
         final Forward forward = logic.get(source);
         final Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         final User user = principal != null && principal instanceof MyUserDetails ? ((MyUserDetails) principal).getUser() : null;
+
+        if(user != null) {
+            System.out.println(user.getUsername());
+            System.out.println("permissions");
+            user.getPermissions().forEach(System.out::println);
+        }
         final String urn = urnOfRequest(request, source);
         if (!hasPermission(forward, user, urn, request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
