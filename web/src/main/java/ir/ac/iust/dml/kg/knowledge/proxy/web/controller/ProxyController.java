@@ -88,7 +88,10 @@ public class ProxyController {
             System.out.println(user.getUsername());
             System.out.println("permissions");
             user.getPermissions().forEach(System.out::println);
+        } else {
+            System.out.println("no user detected");
         }
+
         final String urn = urnOfRequest(request, source);
         if (!hasPermission(forward, user, urn, request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
