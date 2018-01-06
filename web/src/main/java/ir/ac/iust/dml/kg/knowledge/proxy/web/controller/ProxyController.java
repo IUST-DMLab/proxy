@@ -135,7 +135,7 @@ public class ProxyController {
         if (!permissions.isEmpty()) {
             boolean found = false;
             if (user != null)
-                for (Permission fp : forward.getPermissions())
+                for (Permission fp : permissions)
                     for (Permission p : user.getPermissions())
                         if (fp.getTitle().equals(p.getTitle()))
                             found = true;
